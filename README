@@ -7,7 +7,7 @@ Please cite the paper if you find the code useful.
 The main part of the algorithm is in dcva.py. Other files provide supporting functionalities. 
 Input arguments are defined in options.py
 Some of them are:
-dataPath: a .mat file in which pre-change and post-change images are saved as 2 variables (preChangeImage and postChangeImage)
+**dataPath**: a .mat file in which pre-change and post-change images are saved as 2 variables (preChangeImage and postChangeImage)
 inputChannels: either 4 channel RGBNIR or 3 channel RGBIR, in that order
 layersToProcess: the layers from which deep features are to extracted. Choose values from 2,5,8,10,11,23. Recommended value for 
 a quasi-urban area is 2,5,8. If your analyzed scene is spatially less complex (e.g., agricultural land with less spatial variation),
