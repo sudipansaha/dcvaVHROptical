@@ -6,18 +6,36 @@ DCVA processes pre-change and post-change images through a pre-trained network a
 Saha, S., Bovolo, F. and Bruzzone, L., 2019. Unsupervised deep change vector analysis for multiple-change detection in VHR images. IEEE Transactions on Geoscience and Remote Sensing, 57(6), pp.3677-3693.
 Please cite the paper if you find the code useful.
 
-The main part of the algorithm is in dcva.py. Other files provide supporting functionalities. 
-Input arguments are defined in options.py
-Some of them are:
-dataPath: a .mat file in which pre-change and post-change images are saved as 2 variables (preChangeImage and postChangeImage)
-inputChannels: either 4 channel RGBNIR or 3 channel RGBIR, in that order
-layersToProcess: the layers from which deep features are to extracted. Choose values from 2,5,8,10,11,23. Recommended value for 
+The main part of the algorithm is in dcva.py. Other files provide supporting functionalities. <br/>
+Input arguments are defined in options.py. Some of them are: <br/>
+##### dataPath: 
+a .mat file in which pre-change and post-change images are saved as 2 variables (preChangeImage and postChangeImage) <br/>
+##### inputChannels: 
+either 4 channel RGBNIR or 3 channel RGBIR, in that order <br/>
+##### layersToProcess: 
+the layers from which deep features are to extracted. Choose values from 2,5,8,10,11,23. Recommended value for 
 a quasi-urban area is 2,5,8. If your analyzed scene is spatially less complex (e.g., agricultural land with less spatial variation),
-more shallower layers can be used, e.g., 2,5. 
-thresholding: adaptive (for complex quasi-urban areas) or otsu (for spatially less complex areas). A comparison of result with both methods
-can be found in the abovementioned paper. 
+more shallower layers can be used, e.g., 2,5. <br/>
+##### thresholding: 
+adaptive (for complex quasi-urban areas) or otsu (for spatially less complex areas). A comparison of result with both methods
+can be found in the abovementioned paper. <br/>
 
-To run the code, use command, python dcva.py --path <dataPath> (other arguments are optional)
-Before running, download the trained model as instructed in "trainedNet" directory.
+To run the code, use command, python dcva.py --path <dataPath> (other arguments are optional)<br/>
+Before running, download the trained model as instructed in "trainedNet" directory. <br/>
 
 Please note the method is not an exact replication of the abovementioned paper. The original code was implemented in Matlab and is not maintained/distributed anymore.
+
+### Citation
+If you find this code useful, please consider citing:
+```[bibtex]
+@article{saha2019unsupervised,
+  title={Unsupervised deep change vector analysis for multiple-change detection in VHR images},
+  author={Saha, Sudipan and Bovolo, Francesca and Bruzzone, Lorenzo},
+  journal={IEEE Transactions on Geoscience and Remote Sensing},
+  volume={57},
+  number={6},
+  pages={3677--3693},
+  year={2019},
+  publisher={IEEE}
+}
+```
