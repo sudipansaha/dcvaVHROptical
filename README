@@ -1,4 +1,5 @@
 #DCVA for VHR optical images
+
 Implementation of Deep Change Vector Analysis (DCVA) change detection (CD) method for very high resolution (VHR) optical images. DCVA processes
 pre-change and post-change images through a pre-trained network and extracts bi-temporal deep features for subsequent processing in CD framework.
 For details, please read the paper:
@@ -17,5 +18,6 @@ thresholding: adaptive (for complex quasi-urban areas) or otsu (for spatially le
 can be found in the abovementioned paper. 
 
 To run the code, use command, python dcva.py --path <dataPath> (other arguments are optional)
+Before running, download the trained model as instructed in "trainedNet" directory.
 
 Please note the method is not an exact replication of the abovementioned paper. The original code was implemented in Matlab and is not maintained/distributed anymore.
