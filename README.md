@@ -1,8 +1,8 @@
 # DCVA: change detection in VHR optical images
 
-Implementation of Deep Change Vector Analysis (DCVA) change detection (CD) method for very high resolution (VHR) optical images. DCVA processes
-pre-change and post-change images through a pre-trained network and extracts bi-temporal deep features for subsequent processing in CD framework.
-For details, please read the paper:
+## Implementation of Deep Change Vector Analysis (DCVA) change detection (CD) method for very high resolution (VHR) optical images.
+
+DCVA processes pre-change and post-change images through a pre-trained network and extracts bi-temporal deep features for subsequent processing in CD framework. For details, please read the paper: <br/>
 Saha, S., Bovolo, F. and Bruzzone, L., 2019. Unsupervised deep change vector analysis for multiple-change detection in VHR images. IEEE Transactions on Geoscience and Remote Sensing, 57(6), pp.3677-3693.
 Please cite the paper if you find the code useful.
 
