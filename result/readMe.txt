@@ -1,0 +1,1 @@
+Result CD map (a .png file and a .mat file) is stored in this directory
