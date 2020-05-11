@@ -3,7 +3,7 @@
 Spyder Editor
 
 Code Author: Sudipan Saha.
-Please do not distribute the code without the author's permission.
+
 """
 import os
 import sys
