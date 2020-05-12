@@ -13,7 +13,7 @@ Input arguments are defined in options.py. Some of them are: <br/>
 **layersToProcess**: the layers from which deep features are to extracted. Choose values from 2,5,8,10,11,23. Recommended value for 
 a quasi-urban area is 2,5,8. If your analyzed scene is spatially less complex (e.g., agricultural land with less spatial variation),
 more shallower layers can be used, e.g., 2,5. <br/>
-**thresholding**: adaptive (for complex quasi-urban areas) or otsu (for spatially less complex areas). A comparison of result with both methods can be found in the abovementioned paper. <br/>
+**thresholding**: "adaptive" (for complex quasi-urban areas) or "otsu" (for spatially less complex areas) or "scaledOtsu" (otsu scaled by a factor to better address imbalance between number of changed and unchanged pixels). A comparison of result with Adaptive and Otsu methods can be found in the abovementioned paper. <br/>
 
 To run the code, use command, python dcva.py --path <dataPath> (other arguments are optional)<br/>
 Before running, download the trained model as instructed in "trainedNet" directory. <br/>
