@@ -17,6 +17,7 @@ more shallower layers can be used, e.g., 2,5. <br/>
 
 To run the code, use command, python dcva.py --path <dataPath> (other arguments are optional)<br/>
 Before running, download the trained model as instructed in "trainedNet" directory. <br/>
+The output (a .png file and a .mat file) is stored in 'result' directory.
 
 Please note the method is not an exact replication of the abovementioned paper. The original code was implemented in Matlab and is not maintained/distributed anymore.
 
