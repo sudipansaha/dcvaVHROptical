@@ -2,7 +2,7 @@
 """
 Spyder Editor
 
-Please do not distribute the code without the author's permission.
+Author: Sudipan Saha
 """
 import os
 import sys
