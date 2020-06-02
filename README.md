@@ -15,7 +15,7 @@ a quasi-urban area is 2,5,8. If your analyzed scene is spatially less complex (e
 more shallower layers can be used, e.g., 2,5. <br/>
 **thresholding**: "adaptive" (for complex quasi-urban areas) or "otsu" (for spatially less complex areas) or "scaledOtsu" (otsu scaled by a factor to better address imbalance between number of changed and unchanged pixels). A comparison of result with Adaptive and Otsu methods can be found in the abovementioned paper. <br/>
 
-**To run the code**, use command, python dcva.py --path <dataPath> (other arguments are optional)<br/>
+**To run the code** (if input images are square), use command, python dcva.py --path <dataPath> (other arguments are optional)<br/>
 Before running, download the trained model as instructed in "trainedNet" directory. <br/>
 The output (a .png file and a .mat file) is stored in 'result' directory.
   
