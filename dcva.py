@@ -46,6 +46,11 @@ otsuScalingFactor = opt.otsuScalingFactor
 objectMinSize = opt.objectMinSize
 topPercentSaturationOfImageOk=opt.topPercentSaturationOfImageOk
 topPercentToSaturate=opt.topPercentToSaturate
+multipleCDBool=opt.multipleCDBool
+changeVectorBinarizationStrategy=opt.changeVectorBinarizationStrategy
+clusteringStrategy=opt.clusteringStrategy
+clusterNumber=opt.clusterNumber
+hierarchicalDistanceStrategy=opt.hierarchicalDistanceStrategy
 
 
 
@@ -454,7 +459,158 @@ resultDirectory = './result/'
 if not os.path.exists(resultDirectory):
     os.makedirs(resultDirectory)
 
-#Saving the result
+#Saving the Binary CD result (a .mat file and a .png file)
 sio.savemat(resultDirectory+'binaryCdResult.mat', mdict={'cdMap': cdMap})
 plt.imsave(resultDirectory+'binaryCdResult.png',np.repeat(np.expand_dims(cdMap,2),3,2).astype(float))
+
+
+
+
+
+
+##Multiple CD analysis
+if multipleCDBool==True:  ##Multiple CD is performed only if this Bool is True
+
+    #finding indices of changed pixels
+    changePixelsAreaAnalyzedIndices=np.where(cdMap)
+    changePixelsAreaAnalyzedRow=changePixelsAreaAnalyzedIndices[0]
+    changePixelsAreaAnalyzedCol=changePixelsAreaAnalyzedIndices[1]
+    changePixelsAreaAnalyzedLinearIndices=np.ravel_multi_index(changePixelsAreaAnalyzedIndices,cdMap.shape)
+    numberOfChangePixels=changePixelsAreaAnalyzedRow.shape[0]
+    
+    #calculating deep change vector and taking out the changed pixels
+    modifiedTimeVectorDifference=timeVector1FeatureAggregated-timeVector2FeatureAggregated #absolute difference is not taken here
+    modifiedTimeVectorDifferenceSeries=np.reshape(modifiedTimeVectorDifference,\
+                                                  (modifiedTimeVectorDifference.shape[0]*modifiedTimeVectorDifference.shape[1],modifiedTimeVectorDifference.shape[2]))
+    modifiedTimeVectorDifferenceForChangedPixels=np.take(modifiedTimeVectorDifferenceSeries,changePixelsAreaAnalyzedLinearIndices,axis=0)
+    
+    
+    ##binarizing the deep change vector
+    if changeVectorBinarizationStrategy=='zeroThreshold':
+        ##simple binarization with 0 as threshold
+        modifiedTimeVectorDifferenceForChangedPixelsBinarized=(modifiedTimeVectorDifferenceForChangedPixels>0)
+    elif changeVectorBinarizationStrategy=='otsuThreshold':
+        ##binarization with Otsu's threshold
+        modifiedTimeVectorDifferenceForChangedPixelsBinarized=np.zeros(modifiedTimeVectorDifferenceForChangedPixels.shape,dtype='bool')
+        for changeVectorBinarizerIter in range(modifiedTimeVectorDifferenceForChangedPixels.shape[1]):
+            modifiedTimeVectorDifferenceForChangedPixelsBinarized[:,changeVectorBinarizerIter]=\
+                                                                  modifiedTimeVectorDifferenceForChangedPixels[:,changeVectorBinarizerIter]>\
+                                                                  filters.threshold_otsu(modifiedTimeVectorDifferenceForChangedPixels[:,changeVectorBinarizerIter])
+    else:
+        sys.exit('Change vector binarization strategy not identified. Multiple CD aborted.')
+    
+    
+    
+    
+    
+    if clusteringStrategy == 'kmodes':
+        ##applying KModes clustering on the binarized data
+        kmodeClusterizer = KModes(n_clusters=clusterNumber, init='Huang')
+        resultCluster = kmodeClusterizer.fit_predict(modifiedTimeVectorDifferenceForChangedPixelsBinarized)
+        resultCluster=resultCluster+1  #index starts from 0, making it from 1
+        
+    elif clusteringStrategy == 'hierarchical':
+        #applying hierarchical clustering
+        
+        if hierarchicalDistanceStrategy=='hamming':
+        ##hamming distance
+            correlationMatrix=1-np.absolute(cdist(np.transpose(modifiedTimeVectorDifferenceForChangedPixelsBinarized),\
+                                          np.transpose(modifiedTimeVectorDifferenceForChangedPixelsBinarized),'hamming'))
+        elif hierarchicalDistanceStrategy=='correlation':
+            ##correlation distance
+            ##for correlation distance 0 - perfect correlation, 1 - no correlation, 2 - perfect anticorrelation
+            ##need to change to +1, -1 (rather than True, False which is interpreted as 1,0)
+            modifiedTimeVectorDifferenceForChangedPixelsBinarizedForCorrDist=\
+                                                      np.zeros(modifiedTimeVectorDifferenceForChangedPixelsBinarized.shape,dtype='int')
+            modifiedTimeVectorDifferenceForChangedPixelsBinarizedForCorrDist\
+                                                      [modifiedTimeVectorDifferenceForChangedPixelsBinarized==True]=1   
+            modifiedTimeVectorDifferenceForChangedPixelsBinarizedForCorrDist\
+                                                      [modifiedTimeVectorDifferenceForChangedPixelsBinarized==False]=-1                                           
+            correlationMatrix=np.absolute(1-cdist(np.transpose(modifiedTimeVectorDifferenceForChangedPixelsBinarizedForCorrDist),\
+                                          np.transpose(modifiedTimeVectorDifferenceForChangedPixelsBinarizedForCorrDist),'correlation'))
+        else:
+            sys.exit('Hierarchical clustering distance measure not recognized. Multiple CD aborted')
+            
+        #correlationMatrixBinarized=correlationMatrix>(filters.threshold_otsu(correlationMatrix)*2.5)
+        correlationMatrixBinarized=correlationMatrix>0.5
+        importancePerFeature=np.sum(correlationMatrix,axis=0)  #sum of each column
+        tempValImportancePerFeature=importancePerFeature
+        featureImportanceOrder=np.zeros([0],dtype='uint8')
+        while np.max(tempValImportancePerFeature)!=0:
+            mostImpFeature=np.asarray(np.where(tempValImportancePerFeature==np.max(tempValImportancePerFeature)))
+            featureImportanceOrder=np.append(featureImportanceOrder, mostImpFeature)
+            tempValImportancePerFeature[mostImpFeature]=0
+            tempValImportancePerFeature[np.asarray(np.where(correlationMatrixBinarized[mostImpFeature,:]))]=0
+          
+        outputClusterNumber=clusterNumber
+        numberOfFeatureToConsider=int(np.ceil(np.log2(4)))
+        featureToConsider=featureImportanceOrder[0:numberOfFeatureToConsider]
+        binarizedFeaturesOnlyImpFeatures=modifiedTimeVectorDifferenceForChangedPixelsBinarized[:,featureToConsider]
+        binarizedFeaturesOnlyImpFeaturesToLsb=np.zeros([np.shape(binarizedFeaturesOnlyImpFeatures)[0],8],dtype='bool')
+        binarizedFeaturesOnlyImpFeaturesToLsb[:,8-numberOfFeatureToConsider:8]=binarizedFeaturesOnlyImpFeatures
+        decimalFeature=np.packbits(binarizedFeaturesOnlyImpFeaturesToLsb,axis=1)
+          
+        
+        if (2**numberOfFeatureToConsider-outputClusterNumber)!=0:  ##** acts like ^ 
+            numberOfClusterToDiscard=2**numberOfFeatureToConsider-outputClusterNumber
+            currentClusterNumber=2**numberOfFeatureToConsider
+            for clusterDiscardIter in range(0,numberOfClusterToDiscard):
+                clusterModeArray=np.zeros([currentClusterNumber,np.shape(binarizedFeaturesOnlyImpFeatures)[1]])
+                clusterSizeArray=np.zeros(currentClusterNumber)
+                for currentClusterModeCalculatorIter in range(0,currentClusterNumber):
+                    ##took only imp features instead of all features in Matlab version
+                    binarizedFeaturesInThisCluster=binarizedFeaturesOnlyImpFeatures\
+                                                    [(np.asarray(np.where(decimalFeature==currentClusterModeCalculatorIter)))[0,:],:]
+                    clusterModeArray[currentClusterModeCalculatorIter,:]=np.asarray(sistats.mode(binarizedFeaturesInThisCluster,axis=0)[0])
+                    clusterSizeArray[currentClusterModeCalculatorIter]=(binarizedFeaturesInThisCluster.shape[0])/numberOfChangePixels
+                distanceBetweenClusters=cdist(clusterModeArray,clusterModeArray,'hamming')
+                scaledDistanceBetweenClusters=np.copy(distanceBetweenClusters)
+                for clusterDistanceScalingIterRow in range (distanceBetweenClusters.shape[0]):
+                    for clusterDistanceScalingIterCol in range (distanceBetweenClusters.shape[1]):
+                        scaledDistanceBetweenClusters[clusterDistanceScalingIterRow,clusterDistanceScalingIterCol]=\
+                                               scaledDistanceBetweenClusters[clusterDistanceScalingIterRow,clusterDistanceScalingIterCol]\
+                                               *clusterSizeArray[clusterDistanceScalingIterRow]*clusterSizeArray[clusterDistanceScalingIterCol]
+                minDistanceBetweenClusters=np.amin(scaledDistanceBetweenClusters[scaledDistanceBetweenClusters!=0])
+                clusterToMerge1=np.where(scaledDistanceBetweenClusters==minDistanceBetweenClusters)[0][0]
+                clusterToMerge2=np.where(scaledDistanceBetweenClusters==minDistanceBetweenClusters)[1][0]
+                decimalFeature[decimalFeature==clusterToMerge1]=clusterToMerge2
+                currentClusterNumber=currentClusterNumber-1
+                currentClusters=np.unique(decimalFeature)
+                decimalFeatureNew=np.copy(decimalFeature)
+                for decimalFeatureValReplaceIter in range(len(currentClusters)):
+                    decimalFeatureNew[decimalFeature==currentClusters[decimalFeatureValReplaceIter]]=decimalFeatureValReplaceIter
+                decimalFeature=np.copy(decimalFeatureNew)
+        
+        decimalFeature=decimalFeature+1 #adding 1 so that 0 of changed region does not get mixed with 0 of the background
+        resultCluster=np.copy(decimalFeature)
+    else:
+        sys.exit('Clustering strategy not recognized. Multiple CD aborted')
+    
+    
+    #obtaining multiple CD result image
+    multipleChangeOutputMap=np.zeros(cdMap.shape,dtype='uint8')
+    for multipleChangeOutputIter in range(0,len(resultCluster)):
+        multipleChangeOutputMap[changePixelsAreaAnalyzedRow[multipleChangeOutputIter],\
+                                changePixelsAreaAnalyzedCol[multipleChangeOutputIter]]=resultCluster[multipleChangeOutputIter]
+            
+    #Applying mode filtering on the result
+    multipleChangeOutputMap= (filters.rank.modal(multipleChangeOutputMap, morphology.disk(3),mask=cdMap))*cdMap
+    
+    ##Assigning colors to the multiple CD output map for saving as RGB
+    labelColours = np.random.randint(255,size=(100,3))
+    labelColours[0,:]=[0,0,0]
+    labelColours[1,:]=[255,0,0]
+    labelColours[2,:]=[0,0,255]
+    labelColours[3,:]=[0,255,0]
+    labelColours[4,:]=[255,0,255]
+    labelColours[5,:]=[255,255,20]
+    labelColours[6,:]=[255,100,20]
+    labelColours[7,:]=[100,100,255]
+    labelColours[8,:]=[100,255,255]
+    multipleChangeOutputMapRGB = np.array([labelColours[ c ] for c in multipleChangeOutputMap])
+    
+    ##Saving the multiple CD output maps (a .mat file and a .png file)
+    sio.savemat(resultDirectory+'./multipleCdResult.mat', mdict={'multipleChangeOutputMap': multipleChangeOutputMap})
+    cv.imwrite(resultDirectory+'multipleCdResult.png',multipleChangeOutputMapRGB)
+
 
