@@ -17,14 +17,18 @@ more shallower layers can be used, e.g., 2,5. <br/>
 **multipleCDBool** (True/False)whether multiple CD is needed. If false only binary CD is performed. By default, it is set as False.
 **clusterNumber** number of clusters (if multiple CD is performed)
 
-**To run the code** (if input images are square), use command, python dcva.py --path <dataPath> (other arguments are optional)<br/>
+**To run the code** (if input images are square), use command, python dcva.py --dataPath <dataPath> (other arguments are optional)<br/>
 Before running, download the trained model as instructed in "trainedNet" directory. <br/>
 The output (a .png file and a .mat file) is stored in 'result' directory. There will be 2 more files in 'result' if multiple CD is performed.
   
  **However, if your input images are not square** (row size is not equal to column size), use command,
- python dcvaUnequalRowColumn.py --path <dataPath> (other details are as discussed in previous case). Note that
+ python dcvaUnequalRowColumn.py --dataPath <dataPath> (other details are as discussed in previous case). Note that
   this case has not been extensively tested.<br/>
-
+  
+ **Remember to download** the pre-trained models as instructed in the trainedNet folder. There are two different pre-trained model depending on whether your input is RGB or RGB-NIR
+ 
+ **About input format** the code expects a .mat file in which pre-change and post-change images are saved as 2 variables (preChangeImage and postChangeImage). However, if it is not so in your case, you can easily modify few sentences where .mat file is read to accommodate your input format.
+  
 Please note the method is not an exact replication of the abovementioned paper. The original code was implemented in Matlab and is not maintained/distributed anymore.
 
 ### Citation
