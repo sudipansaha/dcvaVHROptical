@@ -4,7 +4,7 @@ scipy==1.2.1
 numpy==1.16.2
 torch==1.2.0
 kmodes==0.10.1
-opencv_python==4.1.0.25
+opencv_python==4.2.0.32
 matplotlib==3.0.3
 Pillow==7.1.2
 skimage==0.0
