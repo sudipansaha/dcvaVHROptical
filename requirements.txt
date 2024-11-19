@@ -1,7 +1,7 @@
 scikit_image==0.14.2
 h5py==2.9.0
 scipy==1.2.1
-numpy==1.16.2
+numpy==1.22.0
 torch==1.2.0
 kmodes==0.10.1
 opencv_python==4.2.0.32
